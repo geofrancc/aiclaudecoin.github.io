@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>$CLAUD — Ai Claude Coin</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold: #FFD700;
+    --gold2: #FFA500;
+    --cyan: #00FFFF;
+    --bg: #020408;
+    --bg2: #050d14;
+    --card: rgba(0,255,255,0.04);
+    --border: rgba(0,255,255,0.15);
+    --text: #e0f7ff;
+    --muted: #6a9ab0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── Stars ── */
+  .stars {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(0,255,255,0.03) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(255,215,0,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .stars::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 30%, rgba(0,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 45%, rgba(255,215,0,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 10%, rgba(0,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 40% 55%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 90%, rgba(255,215,0,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.5) 0%, transparent 100%);
+  }
+
+  /* ── Grid ── */
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 60px;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    background: rgba(2,4,8,0.8);
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 1.2rem;
+    background: linear-gradient(90deg, var(--cyan), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 3px;
+  }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid rgba(0,255,255,0.3);
+    border-radius: 100px;
+    font-size: 0.7rem; letter-spacing: 3px;
+    color: var(--cyan); text-transform: uppercase;
+    margin-bottom: 40px;
+    animation: pulse-border 2s infinite;
+  }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--cyan);
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  @keyframes pulse-border {
+    0%,100% { box-shadow: 0 0 0 0 rgba(0,255,255,0.2); }
+    50% { box-shadow: 0 0 0 8px rgba(0,255,255,0); }
+  }
+
+  .coin-icon {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: linear-gradient(135deg, #0a1628, #0d2040);
+    border: 2px solid rgba(255,215,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 40px;
+    font-size: 64px;
+    position: relative;
+    box-shadow: 0 0 60px rgba(255,215,0,0.15), 0 0 120px rgba(0,255,255,0.08);
+    animation: float 4s ease-in-out infinite;
+  }
+  .coin-icon::before {
+    content: '';
+    position: absolute; inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(var(--gold), var(--cyan), var(--gold2), var(--cyan), var(--gold));
+    z-index: -1;
+    animation: spin 4s linear infinite;
+    opacity: 0.6;
+  }
+  .coin-icon::after {
+    content: '';
+    position: absolute; inset: -1px;
+    border-radius: 50%;
+    background: #020408;
+    z-index: -1;
+  }
+  /* Re-layer the icon above the pseudo-elements */
+  .coin-inner { position: relative; z-index: 1; font-size: 64px; }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0px); }
+    50% { transform: translateY(-16px); }
+  }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 1;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  h1 .line1 {
+    background: linear-gradient(90deg, #fff 0%, var(--cyan) 50%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: block;
+  }
+  h1 .line2 {
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    display: block; font-size: 0.55em; letter-spacing: 8px; margin-top: 8px;
+  }
+
+  .hero-sub {
+    font-size: 0.9rem; color: var(--muted);
+    max-width: 520px; margin: 24px auto 48px;
+    line-height: 1.8; letter-spacing: 1px;
+  }
+
+  .btn-group { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+  .btn-primary {
+    padding: 16px 40px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000; font-family: 'Orbitron', monospace;
+    font-weight: 700; font-size: 0.8rem; letter-spacing: 2px;
+    border: none; border-radius: 4px; cursor: pointer;
+    text-decoration: none; text-transform: uppercase;
+    transition: all 0.3s;
+    box-shadow: 0 0 30px rgba(255,215,0,0.3);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(255,215,0,0.5);
+  }
+
+  .btn-secondary {
+    padding: 16px 40px;
+    background: transparent;
+    color: var(--cyan); font-family: 'Orbitron', monospace;
+    font-weight: 700; font-size: 0.8rem; letter-spacing: 2px;
+    border: 1px solid rgba(0,255,255,0.4); border-radius: 4px; cursor: pointer;
+    text-decoration: none; text-transform: uppercase;
+    transition: all 0.3s;
+  }
+  .btn-secondary:hover {
+    background: rgba(0,255,255,0.08);
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px rgba(0,255,255,0.2);
+  }
+
+  /* ── Stats Bar ── */
+  .stats-bar {
+    position: relative; z-index: 1;
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,255,255,0.02);
+    padding: 0;
+    margin: 0;
+  }
+  .stat-item {
+    padding: 28px 60px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+    flex: 1; min-width: 180px;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-label {
+    font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Orbitron', monospace; font-weight: 700;
+    font-size: 1.4rem;
+    background: linear-gradient(90deg, var(--cyan), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  /* ── Sections ── */
+  section { position: relative; z-index: 1; padding: 100px 40px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace; font-weight: 900;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    margin-bottom: 48px; color: #fff;
+  }
+
+  /* ── Why Cards ── */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 40px;
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .card:hover { border-color: rgba(0,255,255,0.4); transform: translateY(-4px); }
+  .card:hover::before { opacity: 1; }
+  .card-icon { font-size: 2.5rem; margin-bottom: 20px; }
+  .card-title {
+    font-family: 'Orbitron', monospace; font-weight: 700;
+    font-size: 1rem; letter-spacing: 1px; margin-bottom: 12px; color: #fff;
+  }
+  .card-text { font-size: 0.8rem; color: var(--muted); line-height: 1.8; }
+
+  /* ── How to Buy ── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex; gap: 32px; align-items: flex-start;
+    padding: 32px 0; border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    font-family: 'Orbitron', monospace; font-weight: 900;
+    font-size: 2.5rem; color: rgba(0,255,255,0.15);
+    min-width: 60px; line-height: 1;
+  }
+  .step-content h3 {
+    font-family: 'Orbitron', monospace; font-weight: 700;
+    font-size: 1rem; letter-spacing: 1px;
+    color: var(--gold); margin-bottom: 8px;
+  }
+  .step-content p { font-size: 0.8rem; color: var(--muted); line-height: 1.8; }
+  .step-content a { color: var(--cyan); }
+
+  /* ── Tokenomics ── */
+  .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .token-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 0; border-bottom: 1px solid var(--border);
+  }
+  .token-key { font-size: 0.75rem; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+  .token-val { font-family: 'Orbitron', monospace; font-weight: 700; color: var(--cyan); font-size: 0.95rem; }
+
+  /* ── CA Box ── */
+  .ca-box {
+    background: var(--card);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 8px; padding: 40px;
+    text-align: center; margin-top: 60px;
+  }
+  .ca-label { font-size: 0.65rem; letter-spacing: 4px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .ca-address {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.65rem, 2vw, 0.9rem);
+    color: var(--gold);
+    background: rgba(255,215,0,0.05);
+    padding: 16px 24px; border-radius: 4px;
+    border: 1px solid rgba(255,215,0,0.15);
+    word-break: break-all; cursor: pointer;
+    transition: all 0.3s; display: inline-block; width: 100%;
+  }
+  .ca-address:hover { background: rgba(255,215,0,0.1); }
+  .ca-note { font-size: 0.7rem; color: var(--muted); margin-top: 12px; }
+
+  /* ── Footer ── */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 40px 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 20px;
+  }
+  .footer-logo {
+    font-family: 'Orbitron', monospace; font-weight: 900;
+    font-size: 1rem; letter-spacing: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .footer-links { display: flex; gap: 32px; }
+  .footer-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--cyan); }
+  .footer-disclaimer {
+    width: 100%; font-size: 0.65rem; color: var(--muted);
+    letter-spacing: 1px; line-height: 1.8; opacity: 0.6;
+  }
+
+  /* ── Scroll animations ── */
+  .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .stat-item { padding: 20px 30px; }
+    .token-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars"></div>
+<div class="grid-overlay"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">$CLAUD</div>
+  <ul class="nav-links">
+    <li><a href="#why">Why</a></li>
+    <li><a href="#buy">How to Buy</a></li>
+    <li><a href="#tokenomics">Tokenomics</a></li>
+    <li><a href="https://pump.fun" target="_blank">Buy Now ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    Live on Solana · Tradeable Now
+  </div>
+
+  <div class="coin-icon">
+    <span class="coin-inner">🤖</span>
+  </div>
+
+  <h1>
+    <span class="line1">AI CLAUDE</span>
+    <span class="line2">$CLAUD</span>
+  </h1>
+
+  <p class="hero-sub">
+    The first AI-native meme coin on Solana.<br/>
+    Fair launch. Zero team allocation. Community owns everything.
+  </p>
+
+  <div class="btn-group">
+    <a href="https://pump.fun" target="_blank" class="btn-primary">🚀 Buy on pump.fun</a>
+    <a href="#buy" class="btn-secondary">How to Buy</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-label">Total Supply</div>
+    <div class="stat-value">1,000,000</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Network</div>
+    <div class="stat-value">SOLANA</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Tax</div>
+    <div class="stat-value">0 / 0</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Launch</div>
+    <div class="stat-value">FAIR</div>
+  </div>
+</div>
+
+<!-- WHY -->
+<section id="why">
+  <div class="container fade-in">
+    <div class="section-label">// The Vision</div>
+    <div class="section-title">WHY $CLAUD?</div>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">Instant Trading</div>
+        <div class="card-text">Launched on pump.fun with automatic liquidity. Trade immediately after launch. No waiting, no gatekeepers.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <div class="card-title">AI Narrative</div>
+        <div class="card-text">AI is the biggest trend in tech and crypto. $CLAUD rides the wave at the intersection of both worlds.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">Fair Launch</div>
+        <div class="card-text">No presale. No team tokens. No VC allocation. Everyone buys at the same price. 100% community owned.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">💸</div>
+        <div class="card-title">Zero Tax</div>
+        <div class="card-text">0% buy tax. 0% sell tax. What you buy is what you get. Simple, transparent, trustworthy.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌊</div>
+        <div class="card-title">Solana Speed</div>
+        <div class="card-text">Transactions confirm in under a second. Gas fees cost fractions of a cent. Built for mass adoption.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌍</div>
+        <div class="card-title">Global Community</div>
+        <div class="card-text">Telegram, Twitter, and Discord community growing daily. Early holders rewarded most.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW TO BUY -->
+<section id="buy" style="background: rgba(0,255,255,0.01);">
+  <div class="container fade-in">
+    <div class="section-label">// Getting Started</div>
+    <div class="section-title">HOW TO BUY</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3>Install Phantom Wallet</h3>
+          <p>Download <a href="https://phantom.app" target="_blank">Phantom</a> on Chrome, iOS, or Android. Create your wallet and store your seed phrase safely. This is your crypto identity — never share it.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3>Get SOL</h3>
+          <p>Buy SOL on Coinbase, Binance, or any exchange. Transfer to your Phantom wallet. You only need $10–20 worth of SOL to start. A tiny amount covers gas fees.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3>Buy on pump.fun</h3>
+          <p>Go to <a href="https://pump.fun" target="_blank">pump.fun</a>, search for $CLAUD or paste the contract address. Connect Phantom, enter your amount, and click buy. Done in seconds.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <h3>Hold & Share</h3>
+          <p>Join our Telegram and Twitter community. Share the coin with friends. The more the community grows, the higher the value climbs. You're early.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOKENOMICS -->
+<section id="tokenomics">
+  <div class="container fade-in">
+    <div class="section-label">// Token Details</div>
+    <div class="section-title">TOKENOMICS</div>
+    <div class="token-grid">
+      <div>
+        <div class="token-item">
+          <span class="token-key">Name</span>
+          <span class="token-val">Ai Claude</span>
+        </div>
+        <div class="token-item">
+          <span class="token-key">Ticker</span>
+          <span class="token-val">$CLAUD</span>
+        </div>
+        <div class="token-item">
+          <span class="token-key">Supply</span>
+          <span class="token-val">1,000,000</span>
+        </div>
+        <div class="token-item">
+          <span class="token-key">Network</span>
+          <span class="token-val">Solana</span>
+        </div>
+        <div class="token-item">
+          <span class="token-key">Buy Tax</span>
+          <span class="token-val">0%</span>
+        </div>
+        <div class="token-item">
+          <span class="token-key">Sell Tax</span>
+          <span class="token-val">0%</span>
+        </div>
+        <div class="token-item">
+          <span class="token-key">Team Tokens</span>
+          <span class="token-val">None</span>
+        </div>
+        <div class="token-item">
+          <span class="token-key">Launch Type</span>
+          <span class="token-val">Fair Launch</span>
+        </div>
+      </div>
+      <div>
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 40px;">
+          <div style="font-family: 'Orbitron', monospace; font-size: 0.8rem; letter-spacing: 2px; color: var(--cyan); margin-bottom: 24px;">DISTRIBUTION</div>
+          <div style="margin-bottom: 20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+              <span style="font-size:0.75rem; color: var(--muted);">Public Sale (pump.fun)</span>
+              <span style="font-family: 'Orbitron', monospace; color: var(--gold);">100%</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 8px;">
+              <div style="background: linear-gradient(90deg, var(--cyan), var(--gold)); width: 100%; height: 100%; border-radius: 4px;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+              <span style="font-size:0.75rem; color: var(--muted);">Team Allocation</span>
+              <span style="font-family: 'Orbitron', monospace; color: var(--muted);">0%</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 8px;">
+              <div style="background: rgba(255,255,255,0.1); width: 0%; height: 100%; border-radius: 4px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+              <span style="font-size:0.75rem; color: var(--muted);">Reserve / VC</span>
+              <span style="font-family: 'Orbitron', monospace; color: var(--muted);">0%</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 8px;">
+              <div style="background: rgba(255,255,255,0.1); width: 0%; height: 100%; border-radius: 4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ca-box">
+      <div class="ca-label">Contract Address</div>
+      <div class="ca-address" onclick="navigator.clipboard.writeText(this.innerText).then(()=>this.innerText='✅ Copied!').catch(()=>{})" id="ca">
+        Coming soon — deploy on pump.fun to get your address
+      </div>
+      <div class="ca-note">⚠️ Always verify contract address from our official channels only</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">$CLAUD</div>
+  <div class="footer-links">
+    <a href="https://pump.fun" target="_blank">pump.fun</a>
+    <a href="https://t.me" target="_blank">Telegram</a>
+    <a href="https://twitter.com" target="_blank">Twitter</a>
+    <a href="https://dexscreener.com" target="_blank">DEXScreener</a>
+  </div>
+  <div class="footer-disclaimer">
+    $CLAUD is a meme coin with no intrinsic value or financial return expectation. This is not financial advice. Crypto investments carry risk. Never invest more than you can afford to lose.
+  </div>
+</footer>
+
+<script>
+  // Scroll fade-in
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) el.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Parallax stars
+  document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 20;
+    document.querySelector('.stars').style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
